@@ -20,7 +20,7 @@ jobs:
         run: |
           pip install pandas scikit-learn mlflow dagshub matplotlib seaborn
 
-      - name: Run Model Training and Logging to DagsHub
+      - name: Run Model Training 
         env:
           DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }} 
         run: |
