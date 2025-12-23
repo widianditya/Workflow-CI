@@ -9,12 +9,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, f1_score
 from mlflow.models import infer_signature
 
-# ==========================================
-# 1. KONFIGURASI TRACKING URI (Krusial!)
-# ==========================================
-# Kode ini mendeteksi apakah berjalan di GitHub Actions atau Laptop Anda
+
+# 1. KONFIGURASI TRACKING URI
 if os.getenv('GITHUB_ACTIONS') == 'true':
-    # LINGKUNGAN GITHUB: Kirim data ke DagsHub (Kriteria 3)
+    # LINGKUNGAN GITHUB: Kirim data ke DagsHub 
     dagshub.init(
         repo_owner='widianditya', 
         repo_name='Eksperimen_SML_I-Gede-Made-Widi-Anditya', 
@@ -22,19 +20,17 @@ if os.getenv('GITHUB_ACTIONS') == 'true':
     )
     print("Running on GitHub Actions: Tracking to DagsHub")
 else:
-    # LINGKUNGAN LOKAL: Kirim data ke Localhost (Kriteria 2)
+    # LINGKUNGAN LOKAL
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     print("Running Locally: Tracking to http://127.0.0.1:5000")
 
 # Set nama eksperimen agar rapi di dashboard
 mlflow.set_experiment("Heart_Disease_Final_Project")
 
-# 2. Konfigurasi Autologging (Hanya log parameter, model kita log manual)
+# 2. Konfigurasi Autologging 
 mlflow.sklearn.autolog(log_models=False)
 
-# ==========================================
 # 3. PREPARASI DATA
-# ==========================================
 data_path = 'namadataset_preprocessing/cleaned_heart.csv'
 df = pd.read_csv(data_path)
 
@@ -43,9 +39,7 @@ y = df['target']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# ==========================================
 # 4. TRAINING & LOGGING
-# ==========================================
 model = RandomForestClassifier(
     n_estimators=100,
     max_depth=7, 
@@ -59,7 +53,6 @@ with mlflow.start_run(run_name="Final_Model_Submission"):
     # Membuat signature (skema input/output)
     signature = infer_signature(X_test, model.predict(X_test))
     
-    # --- BAGIAN REVISI REVIEWER (KRITERIA 2) ---
     # Log model secara eksplisit ke folder "model" dan DAFTARKAN modelnya
     mlflow.sklearn.log_model(
         sk_model=model, 
@@ -68,7 +61,7 @@ with mlflow.start_run(run_name="Final_Model_Submission"):
         signature=signature
     )
     
-    # --- LOGGING METRIK & ARTEFAK TAMBAHAN ---
+    # LOGGING METRIK & ARTEFAK TAMBAHAN
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
@@ -86,3 +79,4 @@ with mlflow.start_run(run_name="Final_Model_Submission"):
     mlflow.log_artifact(plot_path)
     
     print(f"✅ Success! Model Registered. Accuracy: {acc:.4f}")
+
